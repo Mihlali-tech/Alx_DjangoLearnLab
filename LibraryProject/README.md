@@ -1,1 +1,1 @@
-LibraryProject - ALX Django Task 0
+LibraryProject - ALX Backend Task 0
