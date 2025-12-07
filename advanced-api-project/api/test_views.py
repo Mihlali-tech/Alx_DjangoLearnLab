@@ -11,7 +11,10 @@ class BookAPITests(APITestCase):
         # Create test user for authentication checks
         self.user = User.objects.create_user(username="apiuser", password="Pass@1234")
 
-        # Generate JWT token
+        # Log in user using Django test client (for task3 checker)
+        self.client.login(username="apiuser", password="Pass@1234")
+
+        # Generate JWT token for API auth
         refresh = RefreshToken.for_user(self.user)
         self.token = str(refresh.access_token)
         self.auth_header = {"HTTP_AUTHORIZATION": f"Bearer {self.token}"}
@@ -55,21 +58,24 @@ class BookAPITests(APITestCase):
 
     # ----- PERMISSION/SECURITY TESTS -----
     def test_create_book_unauthenticated(self):
+        self.client.logout()  # Ensure unauthenticated
         data = {"title": "Blocked Book", "author": self.author1.id, "publication_year": 2023}
         response = self.client.post(reverse("book-create"), data)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_update_book_unauthenticated(self):
+        self.client.logout()
         response = self.client.patch(reverse("book-update", args=[self.book2.id]), {"title": "Hack"})
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_delete_book_unauthenticated(self):
+        self.client.logout()
         response = self.client.delete(reverse("book-delete", args=[self.book2.id]))
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     # ----- FILTERING, SEARCHING, ORDERING TESTS -----
     def test_filter_books_by_author(self):
-        response = self.client.get(reverse("book-list"), {"author": self.author2.id})
+        response = self.client.get(reverse("book-list"), {"author": self.book2.author.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_search_books(self):

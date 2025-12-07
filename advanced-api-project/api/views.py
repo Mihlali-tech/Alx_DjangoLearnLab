@@ -2,7 +2,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework import generics, permissions, viewsets
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly, IsAuthenticated
 from .models import Book, Author
 from .serializers import BookSerializer, AuthorSerializer
 from rest_framework.test import APITestCase
