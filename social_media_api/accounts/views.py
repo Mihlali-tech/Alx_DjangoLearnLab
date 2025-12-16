@@ -1,39 +1,21 @@
-from rest_framework import generics, permissions
-from django.contrib.auth import get_user_model
+from rest_framework import generics, status
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from .serializers import RegisterSerializer, UserSerializer
+from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-class RegisterView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = RegisterSerializer
-    permission_classes = [permissions.AllowAny]
-
-
-class UserProfileView(generics.RetrieveAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    lookup_field = 'username'
-    permission_classes = [permissions.IsAuthenticated]
-
-
-class FollowUnfollowView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
+class FollowUnfollowView(generics.GenericAPIView):
     def post(self, request, username):
         try:
             target_user = User.objects.get(username=username)
         except User.DoesNotExist:
-            return Response({"detail": "User not found"}, status=404)
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        user = request.user
-        if target_user in user.following.all():
-            user.following.remove(target_user)
+        if request.user in target_user.followers.all():
+            target_user.followers.remove(request.user)
             action = "unfollowed"
         else:
-            user.following.add(target_user)
+            target_user.followers.add(request.user)
             action = "followed"
 
-        return Response({"status": action})
+        return Response({"status": action}, status=status.HTTP_200_OK)
